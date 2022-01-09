@@ -7,17 +7,18 @@
 const http = require('http');
 const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
+var config = require('./config');
 //The server should respond to all requests with a string representation
-const server = http.createServer(function(req, res){
+var server = http.createServer(function(req, res){
 
 // get the url and parse interface
-const parsedUrl = url.parse(req.url, true)
+var parsedUrl = url.parse(req.url, true)
 //get the path from url
-const path = parsedUrl.pathname;
-const trimedPath = path.replace(/^\/+|\/+$/g, '')
+var path = parsedUrl.pathname;
+var trimmedPath = path.replace(/^\/+|\/+$/g, '')
 
 //   get the query string as an object
-const queryStringObject = parsedUrl.query;
+var queryStringObject = parsedUrl.query;
 
 //Get the http method
 const method = req.method.toLowerCase();
@@ -33,22 +34,55 @@ req.on('data', function(data) {
 });
 req.on('end', function(){
     buffer += decoder.end();
-    res.end('Hello World\n');
-    console.log('req received with these payload', buffer);
+
+    // Choose the handler this request should go to. If one is not found, use the notFound handler
+    var chosenHandler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound;
+    // Construct the data object to send to the handler
+    var data = {
+            'trimmedPath' : trimmedPath,
+            'queryStringObject' : queryStringObject,
+            'method' : method,
+            'headers' : headers,
+            'payload' : buffer,
+    };
+
+    //route the req to the handler specified in the router
+     chosenHandler (data, (statusCode, payload) => {
+            // Use the status code called back by the handler, or default to 200
+             var   statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
+            // Use the payload called back by the handler, or default to empty object
+            payload = typeof(payload) == 'object' ? payload : {};
+
+            // return the response
+
+            // Convert the payload to a string
+            var payloadString = JSON.stringify(payload)
+        res.setHeader('Content-type', 'application/json')
+    res.writeHead(statusCode)
+    res.end('payload');
+    console.log('Return this response: ', statusCode, payloadString);
 });
-/*
-//send response
-res.end('Hello World\n')
 
-
-//Log the request path
-console.log('request received on path ' + trimedPath + 'with method ' + method + ' with this querystring paramentres', queryStringObject)
-console.log('req received with these headers', headers)
-*/
 });
-//Start the server and start it listening on port 3000
+})
+server.listen(config.port, console.log(`server is listening port ${config.port} in ${config.envName} mode ...` ))
+
+//Define the handlers 
+var handlers = {};
+//Sample handler 
+handlers.sample = function(data, callback) {
+//Callbac http status code and a payload object
+callback(406, {'name': 'sample handler'})
+};
 
 
-server.listen(3000, function(){
-    console.log('server is listening port 3000')
-});
+//Not found handler
+handlers.notFound = function(data, callback) {
+callback(404);
+};
+
+//Defining a request router
+const router = {
+'sample' : handlers.sample,
+};
+
