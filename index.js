@@ -29,12 +29,19 @@ var httpsServer = https.createServer(httpsServerOptions, function(req, res){ uni
 httpsServer.listen(config.httpsPort, console.log(`server is listening port ${config.httpsPort} in ${config.envName} mode ...` ))
 //Define the handlers 
 var handlers = {};
+
+
+//Ping handler
+handlers.ping = function(data, callback) {
+    callback(200);
+}
+/* Erase it because of service 1 /ping
 //Sample handler 
 handlers.sample = function(data, callback) {
 //Callbac http status code and a payload object
 callback(406, {'name': 'sample handler'})
 };
-
+*/
 
 //Not found handler
 handlers.notFound = function(data, callback) {
@@ -43,7 +50,7 @@ callback(404);
 
 //Defining a request router
 const router = {
-'sample' : handlers.sample,
+'ping' : handlers.ping,
 };
 
 // All the server logic for both http and https server
