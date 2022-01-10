@@ -10,7 +10,14 @@ const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
 var config = require('./config');
 var fs = require('fs');
-//Instantiate the HTTP server
+//var _data = require('./lib/data');
+var handlers = require('./lib/handlers')
+
+//Testing 
+//@TODO delete this
+//_data.update('test', 'newFile'/*, {'fizz' : 'buzz'}*/, function(err){console.log('this was the error', err)});
+
+
 var httpServer = http.createServer(function(req, res){ unifiedServer(req, res)
 
 
@@ -27,30 +34,15 @@ var httpsServer = https.createServer(httpsServerOptions, function(req, res){ uni
 
 // Start the HTTPS server
 httpsServer.listen(config.httpsPort, console.log(`server is listening port ${config.httpsPort} in ${config.envName} mode ...` ))
-//Define the handlers 
-var handlers = {};
 
 
-//Ping handler
-handlers.ping = function(data, callback) {
-    callback(200);
-}
-/* Erase it because of service 1 /ping
-//Sample handler 
-handlers.sample = function(data, callback) {
-//Callbac http status code and a payload object
-callback(406, {'name': 'sample handler'})
-};
-*/
 
-//Not found handler
-handlers.notFound = function(data, callback) {
-callback(404);
-};
+
 
 //Defining a request router
 const router = {
 'ping' : handlers.ping,
+'users' : handlers.users,
 };
 
 // All the server logic for both http and https server
