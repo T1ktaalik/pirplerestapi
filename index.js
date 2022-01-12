@@ -8,10 +8,11 @@ const http = require('http');
 const https = require('https');
 const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
-var config = require('./config');
+var config = require('./lib/config');
 var fs = require('fs');
 //var _data = require('./lib/data');
-var handlers = require('./lib/handlers')
+var handlers = require('./lib/handlers');
+var helpers = require('./lib/helpers');
 
 //Testing 
 //@TODO delete this
@@ -79,7 +80,7 @@ function unifiedServer(req, res) {
             'queryStringObject': queryStringObject,
             'method': method,
             'headers': headers,
-            'payload': buffer,
+            'payload': helpers.parseJsonToObject(buffer),
         };
 
         //route the req to the handler specified in the router
