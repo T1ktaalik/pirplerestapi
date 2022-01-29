@@ -1,29 +1,38 @@
+//https://github.com/pirple/The-NodeJS-Master-Class
+
 /**a primary file for the api*/
 //Dependencies
-const http = require('http');
-const https = require('https');
-const url = require('url');
-const StringDecoder = require('string_decoder').StringDecoder;
-const fs = require('fs');
-//var _data = require('./lib/data');
+var http = require('http');
+var https = require('https');
+var url = require('url');
+var StringDecoder = require('string_decoder').StringDecoder;
 var config = require('./lib/config');
+var fs = require('fs');
 var handlers = require('./lib/handlers');
 var helpers = require('./lib/helpers');
-var httpServer = http.createServer(function(req, res){ unifiedServer(req, res)})
-httpServer.listen(config.httpPort, console.log(`server is listening port ${config.httpPort} in ${config.envName} mode ...` ))
+
+//Instantiate the HTTP server
+var httpServer = http.createServer(function(req, res){
+    unifiedServer(req, res)
+});
+
+//Start the HTTP server;
+httpServer.listen(config.httpPort, function (){
+     console.log(`server is listening port ${config.httpPort} in ${config.envName} mode ...` )
+    });
+
 //Instantiate the HTTPS server
 var httpsServerOptions = {
 'key': fs.readFileSync('./https/key.pem'), 
 'cert' : fs.readFileSync('./https/cert.pem')
 };
-var httpsServer = https.createServer(httpsServerOptions, function(req, res){ unifiedServer(req, res)})
+var httpsServer = https.createServer(httpsServerOptions, function(req, res){ unifiedServer(req, res)
+});
+
 // Start the HTTPS server
 httpsServer.listen(config.httpsPort, console.log(`server is listening port ${config.httpsPort} in ${config.envName} mode ...` ))
-//Defining a request router
-const router = {
-'ping' : handlers.ping,
-'users' : handlers.users,
-};
+
+
 // All the server logic for both http and https server
 function unifiedServer(req, res) {
     //get the url and parse interface
@@ -55,10 +64,11 @@ function unifiedServer(req, res) {
             'headers': headers,
             'payload': helpers.parseJsonToObject(buffer),
         };
-        //route the req to the handler specified in the router
+
+        //Route the req to the handler specified in the router
         chosenHandler(data, (statusCode, payload) => {
             // Use the status code called back by the handler, or default to 200
-            var statusCode = typeof (statusCode) == 'number' ? statusCode : 200;
+            /*var*/ statusCode = typeof (statusCode) == 'number' ? statusCode : 200;
             // Use the payload called back by the handler, or default to empty object
             payload = typeof (payload) == 'object' ? payload : {};
 
@@ -67,9 +77,14 @@ function unifiedServer(req, res) {
             var payloadString = JSON.stringify(payload);
             res.setHeader('Content-type', 'application/json');
             res.writeHead(statusCode);
-            res.end('payload');
-            console.log('Return this response: ', statusCode, payloadString);
+            res.end(payloadString);
+            console.log(/*'Return this response: ', statusCode, payloadString*/trimmedPath, statusCode);
         });
 
     });
-}
+};
+//Defining a request router ????????????????
+var router = {
+    'ping' : handlers.ping,
+    'users' : handlers.users,
+    };
